@@ -11,9 +11,23 @@ package dequeproblem;
  */
 public class DequeProblem {
 
+    /**
+    * @param candidates addends to test
+    * @param targetSum sum to seek
+    * @param answerSize optional size for solution array
+    * @return the array of addends or in the case of no solution, an empty array of type int
+    **/
+    
+    private static final int DEFAULT_SOLUTION_SIZE = 2;
+    
     public static int[] findAddendsThatSum(int[] candidates, int targetSum, int... answerSize) {
         int startIndex = 0;
-        int numberOfAddends = answerSize.length != 0 ? answerSize[0] : 2;
+        int numberOfAddends; 
+        if (answerSize.length == 0){
+            numberOfAddends = DEFAULT_SOLUTION_SIZE;
+        } else {
+            numberOfAddends = answerSize[0];
+        } 
         int endIndex = startIndex + numberOfAddends;
         int maxIndex = candidates.length;
         if (endIndex > maxIndex || numberOfAddends < 1) {
@@ -31,10 +45,17 @@ public class DequeProblem {
                 return new int[]{};
             }
         }
-        return getSubarray(candidates, startIndex, endIndex);
+        return slice(candidates, startIndex, endIndex);
     }
 
-    private static int[] getSubarray(int[] candidates, int start, int end) {
+    /**
+     * 
+     * @param candidates the source array
+     * @param start the starting index from which to begin the slice
+     * @param end the ending index at which to end the slice
+     * @return a slice of the candidates array from start to end
+     */
+    private static int[] slice(int[] candidates, int start, int end) {
         int[] subArray = new int[end - start];
         int ii = 0;
         for (int jj = start; jj < end; jj++) {
@@ -43,6 +64,14 @@ public class DequeProblem {
         return subArray;
     }
 
+    /**
+     * 
+     * @param candidates the source array
+     * @param start first index of addend in sum
+     * @param end last index of addend in sum
+     * @return summation of addends from start to end
+     */
+    
     private static int getSum(int[] candidates, int start, int end) {
         int sum = 0;
         for (int ii = start; ii < end; ii++) {

@@ -88,7 +88,6 @@ public class DequeProblemTest {
     }
 
     private boolean compareElements(int[] one, int[] two) {
-        //arrays must be sorted!
         if (one.length != two.length) {
             return false;
         }
