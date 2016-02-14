@@ -62,31 +62,6 @@ public class DequeProblemTest {
         assertTrue(compareElements(DequeProblem.findAddendsThatSum(input, targetSum), expected));
     }
 
-    //tests below for n inputs
-    @Test
-    public void findsNAddendsThatSumToTarget() {
-        int[] expected = {1, 2, 3, 4};
-        int[] input = {1, 2, 3, 4, 5, 7};
-        int targetSum = 10;
-        assertTrue(compareElements(DequeProblem.findAddendsThatSum(input, targetSum, 4), expected));
-    }
-
-    @Test
-    public void findsOneAddendThatEqualsTarget() {
-        int[] expected = {25};
-        int[] input = {2, 4, 6, 25};
-        int targetSum = 25;
-        assertTrue(compareElements(DequeProblem.findAddendsThatSum(input, targetSum, 1), expected));
-    }
-
-    @Test
-    public void handlesNegativeNumbers() {
-        int[] expected = {2, 4, -6};
-        int[] input = {2, 4, -6, 24, 34};
-        int targetSum = 0;
-        assertTrue(compareElements(DequeProblem.findAddendsThatSum(input, targetSum, 3), expected));
-    }
-
     private boolean compareElements(int[] one, int[] two) {
         if (one.length != two.length) {
             return false;

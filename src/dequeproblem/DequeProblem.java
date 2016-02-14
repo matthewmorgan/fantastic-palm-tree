@@ -20,14 +20,9 @@ public class DequeProblem {
     
     private static final int DEFAULT_SOLUTION_SIZE = 2;
     
-    public static int[] findAddendsThatSum(int[] candidates, int targetSum, int... answerSize) {
+    public static int[] findAddendsThatSum(int[] candidates, int targetSum) {
         int startIndex = 0;
-        int numberOfAddends; 
-        if (answerSize.length == 0){
-            numberOfAddends = DEFAULT_SOLUTION_SIZE;
-        } else {
-            numberOfAddends = answerSize[0];
-        } 
+        int numberOfAddends= DEFAULT_SOLUTION_SIZE;
         int endIndex = startIndex + numberOfAddends;
         int maxIndex = candidates.length;
         if (endIndex > maxIndex || numberOfAddends < 1) {
