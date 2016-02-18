@@ -2,10 +2,12 @@ package subsetsum;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  *
@@ -19,7 +21,7 @@ public class SubsetSum {
 
     /**
      *
-     * @param set array of ints that we will search for subsets. positive,
+     * @param input array of ints that we will search for subsets. positive,
      * negative, or zero, need not be sorted. Duplicate entries are filtered.
      * @param sum target sum for which we want to find an applicable subset. Can
      * be positive, negative, or zero.
@@ -27,18 +29,28 @@ public class SubsetSum {
      * Only one solution is returned. Returns an empty int array if no subset of
      * one or more addends in the set sum to the target.
      */
-    public static int[] findAnySolution(int[] set, int sum) {
-        if (set == null || set.length < 1) {
+    public static int[] findFastestSolution(int[] input, int sum) {
+
+        int[] pairSolution = SubsetSum.findPair(input, sum);
+        if (SubsetSum.sumOfElementsEquals(pairSolution, 0)) {
+            return findSolutionWithoutTryingPairsFirst(input, sum);
+        } else {
+            return pairSolution;
+        }
+    }
+
+    public static int[] findSolutionWithoutTryingPairsFirst(int[] input, int sum) {
+        if (input == null || input.length < 1) {
             return new int[]{};
         }
-
+        int[] set = Arrays.copyOf(input, input.length);
+        Arrays.sort(set);
         boolean stopOnFirst;
         columnIndex = generateColumnIndex(set, sum);
         rowIndex = generateRowIndex(set);
         matrix = createMatrix();
         populateFirstRow();
         populateRemainingRows(stopOnFirst = true, sum);
-
         return getASolutionArray(sum, rowIndex.length - 1);
     }
 
@@ -56,17 +68,17 @@ public class SubsetSum {
         if (set == null || set.length < 1) {
             return new int[]{};
         }
+        Set<Integer> copy = new HashSet<>(set.length);
+        for (int i : set) {
+            copy.add(i);
+        }
 
-        boolean stopOnFirst;
-        columnIndex = generateColumnIndex(set, sum);
-        rowIndex = generateRowIndex(set);
-        matrix = createMatrix();
-
-        populateFirstRow();
-        populateRemainingRows(stopOnFirst = false, sum);
-        return SubsetSum.getAllSolutions(sum).stream()
-                .filter(solution -> solution.length == 2)
-                .findAny().orElse(new int[]{});
+        for (Integer i : copy) {
+            if (copy.contains(sum - i)) {
+                return new int[]{i.intValue(), sum - i};
+            }
+        }
+        return new int[]{};
     }
 
     private static Set<int[]> getAllSolutions(int sum) {
@@ -80,7 +92,7 @@ public class SubsetSum {
             matrix = getSplicedArray(matrix, solutionIndex);
             rowIndex = getSplicedArray(rowIndex, solutionIndex);
             solutionRows = getSplicedArray(solutionRows, solutionIndex);
-            for (int ii=0; ii<solutionRows.length;ii++){
+            for (int ii = 0; ii < solutionRows.length; ii++) {
                 solutionRows[ii]--;
             }
         }
@@ -88,15 +100,16 @@ public class SubsetSum {
     }
 
     private static int[] getASolutionArray(int sum, int startingRow) {
-        Set<Integer> solutionSet = new HashSet<>();
+
         int remaining = sum;
         int cc = getColumnForSum(sum);
         int rr = startingRow;
-
+        int[] solutionSet = new int[rr + 1];
+        int idx = 0;
         while (rr >= 0 && cc > 0) {
             if (matrix[rr][cc]) {
                 if (rr == 0 || !matrix[rr - 1][cc]) {
-                    solutionSet.add(rowIndex[rr]);
+                    solutionSet[idx++] = rowIndex[rr];
                     remaining -= rowIndex[rr];
                     cc = getColumnForSum(remaining);
                 }
@@ -104,31 +117,44 @@ public class SubsetSum {
             rr--;
         }
 
-        return solutionSet.stream()
-                .sorted((a, b) -> a - b)
-                .mapToInt(i -> i)
-                .toArray();
+        return Arrays.copyOfRange(solutionSet, 0, idx);
     }
 
     private static int[] generateColumnIndex(int[] set, int sum) {
-        Map<Boolean, Set<Integer>> sumsHeader = Arrays.stream(set)
-                .mapToObj(i -> i)
-                .sorted()
-                .collect(Collectors.partitioningBy(el -> el < 0, Collectors.toSet()));
-        Integer lowerBound = sumsHeader.get(true)
-                .stream()
-                .reduce(0, Integer::sum);
-        Integer upperBound = sumsHeader.get(false)
-                .stream()
-                .reduce(0, Integer::sum);
-        return IntStream.rangeClosed(lowerBound, upperBound)
-                .toArray();
+        int lowerBound = getLowestSum(set);
+        int upperBound = getHighestSum(set);
+        int[] colIdx = new int[(upperBound - lowerBound) + 1];
+        int jj = 0;
+        for (int ii = lowerBound; ii <= upperBound; ii++) {
+            colIdx[jj++] = ii;
+        }
+        return colIdx;
     }
 
+    private static int getHighestSum(int[] set) {
+        int sum = 0;
+        for (int i : set) {
+            if (i > 0) {
+                sum += i;
+            }
+        }
+        return sum;
+    }
+
+    private static int getLowestSum(int[] set) {
+        int sum = 0;
+        for (int i : set) {
+            if (i < 0) {
+                sum += i;
+            }
+        }
+        return sum;
+    }
     private static int[] generateRowIndex(int[] set) {
-        return Arrays.stream(set)
+        int[] idx = Arrays.copyOf(set, set.length);
+        return Arrays.stream(idx)
                 .mapToObj(i -> i)
-                .sorted((a,b) -> b-a)
+                .sorted((a, b) -> b - a)
                 .mapToInt(i -> i)
                 .toArray();
     }
@@ -150,7 +176,7 @@ public class SubsetSum {
             for (int cc = 0; cc < columnIndex.length; cc++) {
                 if (columnIndex[cc] == addend || matrix[rr - 1][cc]) {
                     matrix[rr][cc] = true;
-                    if (columnIndex[cc] == sum && columnIndex[cc] > 0) {
+                    if (stopOnFirst && (columnIndex[cc] == sum && columnIndex[cc] > 0)) {
                         stopAndSplice(rr, cc);
                         return;
                     }
@@ -199,8 +225,12 @@ public class SubsetSum {
         if (sumColumn < 0) {
             return false;
         }
-        return Arrays.stream(matrix)
-                .anyMatch(row -> row[sumColumn]);
+        for (boolean[] row : matrix) {
+            if (row[sumColumn]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static int[] getAllSolutionStartingRows(int sum) {
@@ -208,15 +238,14 @@ public class SubsetSum {
         if (sumColumn < 0) {
             return new int[]{};
         }
-        Set<Integer> solutionRows = new HashSet<>();
+        int[] solutionRows = new int[matrix.length];
+        int ii = 0;
         for (int rr = 0; rr < matrix.length; rr++) {
             if (matrix[rr][sumColumn]) {
-                solutionRows.add(rr);
+                solutionRows[ii] = rr;
             }
         }
-        return solutionRows.stream()
-                .mapToInt(i -> i)
-                .toArray();
+        return Arrays.copyOfRange(solutionRows, 0, ii);
     }
 
     private static boolean[][] getSplicedArray(boolean[][] oldArray, int row) {
@@ -245,5 +274,38 @@ public class SubsetSum {
             }
         }
         return newArray;
+    }
+
+    public static boolean sumOfElementsEquals(int[] result, int sum) {
+        int resultSum = 0;
+        for (int i : result) {
+            resultSum += i;
+        }
+        return resultSum == sum;
+    }
+
+
+
+    private static int[] getRandomInts(int lowerBound, int upperBound, int numberOfInts) {
+        Set<Integer> randomInts = new HashSet<>(numberOfInts);
+
+        int diff = upperBound - lowerBound;
+        Random ran = new Random();
+        while (randomInts.size() < numberOfInts) {
+            int val = ran.nextInt(diff);
+            randomInts.add(lowerBound + val);
+        }
+        return randomInts.stream().mapToInt(i -> i).toArray();
+    }
+
+    private static int pickRandomSum(int[] set) {
+        Random ran = new Random();
+        int numberOfInts = set.length;
+        int idx1 = ran.nextInt(numberOfInts - 1);
+        int idx2 = idx1;
+        while (idx2 == idx1) {
+            idx2 = ran.nextInt(numberOfInts - 1);
+        }
+        return set[idx1] + set[idx2];
     }
 }
