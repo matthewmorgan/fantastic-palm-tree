@@ -144,14 +144,12 @@ public class SubsetSumTest {
         int[] input = {1, 7, 5, 10, 15};
         int targetSum = 21;
         int[] answer = SubsetSum.findFastestSolution(input, targetSum);
-
-        System.out.println(Arrays.toString(answer));
         assertTrue(SubsetSum.sumOfElementsEquals(answer, targetSum));
     }
 
     @Test
     public void handlesLargerSetsWithoutUsingJavaSet() {
-        int numberOfInts = 50;
+        int numberOfInts = 10;
         int[] input = getRandomInts(-500, -100, numberOfInts);
         int targetSum = pickRandomSum(input);
         int[] answer = SubsetSum.findSolutionWithoutTryingPairsFirst(input, targetSum);
