@@ -4,7 +4,7 @@ The Java class `SubsetSum` accepts two inputs:
 int[] input, int sum
 ```
 
-The class provides two public methods:
+The class provides three public methods:
 
 1) Returns two addends that total sum, or an empty int[] if no solution is found:
 
@@ -17,7 +17,13 @@ and
 2) Returns an int[] containing addends that total sum, or an empty int[] if no solution is found
 
 ```
-int [] findAnySolution(int[] input, int sum)
+int [] findSolutionWithoutTryingPairsFirst(int[] input, int sum)
+```
+
+3) Returns an int[] containing addends that total sum, or an empty int[] if no solution is found.  Tries `findPair` first, as it is usually fast.
+
+```
+int [] findFastestSolution(int[] input, int sum)
 ```
 
 
@@ -47,8 +53,6 @@ Design decisions:
 
 2. Duplicate entries in the input set are filtered out.
 
-3. I used Streams and lambdas where they made the code cleaner and more readable. In some cases (loops requiring indexes) they would have provided no improvement so I used traditional for-loops. 
+3. I experimented with Streams and found they slowed things down considerably in certain places, so I used primitives and loops in those spots. 
 
-4. I chose to apply a dynamic approach to avoid O(n^2) performance from calculating all possible subsets using recursion. This solution provides performance on the order of O(n).
-
-5. The public API returns the subset with the elements sorted from smallest to largest.
+4. The public API returns the subset with the elements sorted from smallest to largest.
